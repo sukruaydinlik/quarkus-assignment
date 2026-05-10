@@ -1,0 +1,31 @@
+services:
+  artemis:
+    image: apache/activemq-artemis:2.33.0
+    container_name: artemis
+    ports:
+      - "61616:61616"
+      - "8161:8161"
+    environment:
+      - AMQ_USER=artemis
+      - AMQ_PASSWORD=artemis
+      - AMQ_EXTRA_ARGS=--queues data-queue --addresses data-topic
+    networks:
+      - assignment-net
+
+  app:
+    build:
+      context: .
+      dockerfile: src/main/docker/Dockerfile.jvm
+    container_name: quarkus-app
+    ports:
+      - "8080:8080"
+    environment:
+      - QUARKUS_ARTEMIS_URL=tcp://artemis:61616
+    depends_on:
+      - artemis
+    networks:
+      - assignment-net
+
+networks:
+  assignment-net:
+    driver: bridge
